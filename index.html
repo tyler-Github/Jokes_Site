@@ -1,0 +1,111 @@
+<!-- HTML page -->
+<html>
+  <head>
+    <link rel="icon" href="/Favicons/favicon-32x32.png" sizes="32x32" />
+    <link rel="icon" href="/Favicons/favicon-16x16.png" sizes="16x16" />
+    <title>Funny Memes and Viral Content - Your Daily Dose of Laughter</title>
+    <meta name="description" content="Get your daily dose of laughter with our collection of hilarious jokes.">
+
+      <link rel="stylesheet" href="/jokes.css">
+
+  </head>
+   <body>
+    <div id="joke-container">
+      <!-- Joke will be inserted here -->
+    </div>
+    <button onclick="getJoke()">Show me a joke!</button>
+    <button onclick="copyJoke()" id="copy-button">Copy joke</button>
+    <button onclick="saveMeme()">Save Joke</button>
+
+       <footer>
+      Made by ChatGPT
+      <button onclick="window.location.href='/savedjokes';" class="footer-button">View Saved Jokes</button>
+    </footer>
+  </body>
+  <script>
+    // JavaScript function to get a joke from the Joke API and insert it into the page
+    function getJoke() {
+      // Make a GET request to the Joke API
+      fetch("https://v2.jokeapi.dev/joke/Any?blacklistFlags=nsfw,racist")
+        .then(response => response.json()) // Parse the response as JSON
+        .then(data => {
+          // Check the type of the joke
+          if (data.type === "single") {
+            // If it is a single joke, display the joke property
+            document.getElementById("joke-container").innerHTML = data.joke;
+          } else if (data.type === "twopart") {
+            // If it is a two-part joke, concatenate the setup and delivery properties
+            document.getElementById("joke-container").innerHTML = data.setup + " " + data.delivery;
+          }
+        })
+        .catch(error => {
+          // If there is an error, display an error message
+          document.getElementById("joke-container").innerHTML = "Error loading joke";
+        });
+    }
+
+    // JavaScript function to copy the joke to the clipboard
+    function copyJoke() {
+      // Get the joke text
+      const joke = document.getElementById("joke-container").innerText;
+
+      // Create a temporary textarea element
+      const textarea = document.createElement("textarea");
+      textarea.value = joke;
+      document.body.appendChild(textarea);
+
+      // Select the text in the textarea
+      textarea.select();
+
+      // Copy the text to the clipboard
+      document.execCommand("copy");
+
+      // Remove the textarea element
+      document.body.removeChild(textarea);
+    }
+
+      function saveMeme() {
+        // Get the URL of the current meme
+        var currentMemeUrl = document.getElementById("joke-container").innerText;
+        // Get the saved memes from local storage
+        var savedMemes = JSON.parse(localStorage.getItem("jokes")) || [];
+        // Add the current meme to the list of saved memes
+        savedMemes.push(currentMemeUrl);
+        // Store the updated list of saved memes in local storage
+        localStorage.setItem("jokes", JSON.stringify(savedMemes));
+      }
+
+      function warnAndSendJoke() {
+  console.warn("%cDo not paste anything into the console because it can potentially harm your computer or steal your information!", "color: red; font-size: larger;");
+
+  // Get a joke from the joke API
+  fetch("https://v2.jokeapi.dev/joke/Any?blacklistFlags=nsfw,racist")
+    .then(response => response.json())
+    .then(data => {
+      // Check if the API response includes a joke
+      if (data.joke) {
+        // Display the joke in the console
+        console.log("%c" + data.joke, "color: green; font-size: larger;");
+
+        // Display a message saying that ChatGPT made this website with some styling
+        console.log("%cMade by ChatGPT", "color: blue; font-size: smaller; font-style: italic; text-decoration: underline;");
+      } else {
+        // Display an error message in the console
+        console.error("Unable to get joke.");
+      }
+    })
+    .catch(error => {
+      // Display an error message in the console
+      console.error("An error occurred while fetching the joke: " + error);
+    });
+}
+
+
+
+
+
+
+warnAndSendJoke();
+
+  </script>
+</html>

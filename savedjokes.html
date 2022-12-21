@@ -1,0 +1,88 @@
+<html>
+  <head>
+    <title>Jokes</title>
+    <meta name="description" content="Laugh out loud with the funniest jokes on the internet.">
+    <link rel="stylesheet" href="/jokes.css">
+    <link rel="icon" href="/Favicons/favicon-32x32.png" sizes="32x32" />
+      <link rel="icon" href="/Favicons/favicon-16x16.png" sizes="16x16" />
+  </head>
+  <body>
+    <div class="container">
+      <center><h1>Saved Jokes</h1></center>
+      <!-- Display the jokes -->
+      <div class="jokes-container">
+
+        <button onclick="goBack()" id="back-button">Go back</button>
+
+        <footer>
+            Made by ChatGPT
+            <button onclick="window.location.href='/savedjokes';"  class="footer-button">View Saved Jokes</button>
+          </footer>
+        <script>
+          // Get the jokes from local storage
+          var jokes = JSON.parse(localStorage.getItem("jokes")) || [];
+          // Loop through the list of jokes and display them
+          jokes.forEach(function(joke) {
+            // Create a container element for the joke
+            var jokeElement = document.createElement("div");
+            // Create a text node for the joke
+            var jokeText = document.createTextNode(joke);
+            // Append the text node to the container element
+            jokeElement.appendChild(jokeText);
+            // Create a delete button for the joke
+            var deleteButton = document.createElement("button");
+            deleteButton.innerHTML = "Delete";
+            deleteButton.addEventListener("click", function() {
+              // Remove the joke from the list
+              jokes.splice(jokes.indexOf(joke), 1);
+              // Update the list in local storage
+              localStorage.setItem("jokes", JSON.stringify(jokes));
+              // Remove the joke element from the page
+              jokeElement.remove();
+            });
+            // Append the delete button to the container element
+            jokeElement.appendChild(deleteButton);
+            // Append the container element to the jokes container element
+            document.querySelector(".jokes-container").appendChild(jokeElement);
+          });
+
+          function goBack() {
+      window.history.back();
+    }
+
+    function warnAndSendJoke() {
+  console.warn("%cDo not paste anything into the console because it can potentially harm your computer or steal your information!", "color: red; font-size: larger;");
+
+  // Get a joke from the joke API
+  fetch("https://v2.jokeapi.dev/joke/Any?blacklistFlags=nsfw,racist")
+    .then(response => response.json())
+    .then(data => {
+      // Check if the API response includes a joke
+      if (data.joke) {
+        // Display the joke in the console
+        console.log("%c" + data.joke, "color: green; font-size: larger;");
+
+        // Display a message saying that ChatGPT made this website with some styling
+        console.log("%cMade by ChatGPT", "color: blue; font-size: smaller; font-style: italic; text-decoration: underline;");
+      } else {
+        // Display an error message in the console
+        console.error("Unable to get joke.");
+      }
+    })
+    .catch(error => {
+      // Display an error message in the console
+      console.error("An error occurred while fetching the joke: " + error);
+    });
+}
+
+
+
+
+
+
+warnAndSendJoke();
+        </script>
+      </div>
+    </div>
+  </body>
+</html>
