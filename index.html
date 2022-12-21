@@ -13,6 +13,14 @@
     <div id="joke-container">
       <!-- Joke will be inserted here -->
     </div>
+     
+     <form id="rating-form">
+  <label for="rating">Rate this joke:</label>
+  <input type="range" min="1" max="5" value="3" id="rating">
+  <button type="submit">Submit</button>
+</form>
+     
+     
     <button onclick="getJoke()">Show me a joke!</button>
     <button onclick="copyJoke()" id="copy-button">Copy joke</button>
     <button onclick="saveMeme()">Save Joke</button>
