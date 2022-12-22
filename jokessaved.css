@@ -5,10 +5,16 @@ body {
   }
   
   .container {
-    width: 80%;
-    max-width: 1200px;
-    margin: 0 auto;
+    position: absolute;
+    top: 30%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border: 1px solid #ddd;
+    border-radius: 4px;
     padding: 20px;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    background-color: #fff;
   }
   
   h1 {
