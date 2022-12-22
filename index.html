@@ -54,52 +54,68 @@ firebase.initializeApp(firebaseConfig);
 
 const database = firebase.database();
 
-function getJoke() {
-  fetch('https://api.jokes.ml/jokes/random')
-    .then(response => response.json())
-    .then(data => {
-      const joke = data.joke;
-      const jokeName = joke.replace(/[^a-zA-Z0-9]/g, '');
-      const ratingsRef = firebase.database().ref(`jokes/${jokeName}/ratings`);
-
-      ratingsRef.once('value').then(snapshot => {
-        const ratings = snapshot.val();
-        let sum = 0;
-        let count = 0;
-        for (const rating in ratings) {
-          sum += ratings[rating];
-          count++;
-        }
-        const avgRating = sum / count;
-        displayJoke(joke, avgRating);
-      });
-    });
-}
-
-
-function submitRating(jokeName, rating) {
-  firebase.database().ref(`jokes/${jokeName}/ratings`).push(rating);
-}
-
-    
-
-function displayJoke(joke, avgRating) {
+// Fetch the joke and display it on the page
+async function displayJoke() {
+  const joke = await getJoke();
   const jokeContainer = document.getElementById('joke-container');
   jokeContainer.innerHTML = `
-    <p>${joke}</p>
-    <p>Average Rating: ${avgRating}</p>
+    <p>${joke.joke}</p>
+    <form id="rating-form">
+      <label for="rating">Rate this joke:</label>
+      <input type="range" min="1" max="5" value="3" id="rating">
+      <button type="submit">Submit</button>
+    </form>
+  `;
+
+  // Add an event listener for the rating form
+  const form = document.getElementById('rating-form');
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    const rating = form.elements.rating.value;
+    submitRating(joke.id, rating);
+  });
+
+  // Get the average rating for the joke and display it on the page
+  const averageRating = await getAverageRating(joke.id);
+  const ratingContainer = document.getElementById('rating-container');
+  ratingContainer.innerHTML = `
+    <p>Average rating: ${averageRating}</p>
   `;
 }
 
-
-  getAverageRating(jokeKey).then((averageRating) => {
-    const ratingContainer = document.querySelector('#rating-container');
-    ratingContainer.innerHTML = `Average rating: ${averageRating}`;
-  });
-
-function submitRating(jokeKey, rating) {
-  database.ref(`jokes/${jokeKey}/ratings`).push(rating);
+// Get a joke from the API
+async function getJoke() {
+  const response = await fetch('https://v2.jokeapi.dev/joke/Any?blacklistFlags=nsfw,racist');
+  const data = await response.json();
+  return data;
 }
+
+// Submit a rating for a joke
+async function submitRating(jokeId, rating) {
+  // Add the rating to the database
+  const ratingsRef = database.ref(`jokes/${jokeId}/ratings`);
+  ratingsRef.push(rating);
+}
+
+// Get the average rating for a joke
+async function getAverageRating(jokeId) {
+  // Get all the ratings for the joke from the database
+  const ratingsRef = database.ref(`jokes/${jokeId}/ratings`);
+  const snapshot = await ratingsRef.once('value');
+  const ratings = snapshot.val();
+
+  // Calculate the average rating
+  let sum = 0;
+  let count = 0;
+  for (const key in ratings) {
+    sum += ratings[key];
+    count++;
+  }
+  const averageRating = sum / count;
+  return averageRating;
+}
+
+displayJoke();
     
 const form = document.getElementById('rating-form');
 form.addEventListener('submit', submitRating);
