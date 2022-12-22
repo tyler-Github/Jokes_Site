@@ -63,12 +63,14 @@ const database = firebase.database();
 const jokesRef = database.ref("jokes");
 
 
- // Get a joke from the API
-  async function getJoke() {
-    const response = await fetch('https://v2.jokeapi.dev/joke/Any?blacklistFlags=religious,political,racist,sexist');
-    const joke = await response.json();
-    return joke;
-  }
+const apiUrl = 'https://v2.jokeapi.dev/joke/Any?blacklistFlags=religious,political,racist,sexist';
+
+async function getJoke() {
+  const response = await fetch(apiUrl);
+  const data = await response.json();
+  const joke = data.joke;
+  document.getElementById('joke-container').innerHTML = joke;
+}
 
   // Display the joke on the page
   async function displayJoke() {
