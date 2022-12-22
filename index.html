@@ -86,30 +86,33 @@ async function displayJoke() {
     const jokeContainer = document.getElementById('joke-container');
 const averageRatingContainer = document.getElementById('average-rating-container');
 
-// Get the joke text from the joke container
-const joke = jokeContainer.textContent;
+// Get the joke text from the joke-container element
+const jokeText = jokeContainer.textContent;
 
-// Check if the joke has a rating in the database
-const ratingsRef = firebase.database().ref(`jokes/${joke}/ratings`);
-ratingsRef.once('value', snapshot => {
-  // If the joke has a rating, calculate the average and display it
-  if (snapshot.exists()) {
-    let ratings = snapshot.val();
-    let sum = 0;
-    let count = 0;
-    for (const rating in ratings) {
-      sum += ratings[rating];
-      count++;
-    }
-    const average = sum / count;
-    averageRatingContainer.textContent = `Average rating: ${average}`;
-  }
-  // If the joke does not have a rating, display a message saying so
-  else {
-    averageRatingContainer.textContent = 'This joke has not been rated yet';
-  }
+// Remove special characters from the joke text to use as the key in the database
+const jokeKey = jokeText.replace(/[^\w\s]/gi, '');
+
+// Get a reference to the ratings for the joke in the database
+const ratingsRef = firebase.database().ref(`jokes/${jokeKey}/ratings`);
+
+// Get the average rating for the joke
+ratingsRef.once('value').then(function(snapshot) {
+  let totalRating = 0;
+  let count = 0;
+
+  snapshot.forEach(function(rating) {
+    totalRating += rating.val();
+    count++;
+  });
+
+  // Calculate the average rating
+  const averageRating = totalRating / count;
+
+  // Display the average rating in the average-rating-container element
+  averageRatingContainer.textContent = `Average Rating: ${averageRating}`;
 });
 
+    
     
 // Get a joke from the API
 async function getJoke() {
