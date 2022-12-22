@@ -181,6 +181,52 @@ function displayJoke(joke) {
   document.getElementById("joke-container").innerHTML = joke;
 }
   
+  
+  const form = document.getElementById('rating-form');
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const rating = form.elements.rating.value;
+  const jokeContainer = document.getElementById('joke-container');
+  let jokeName = jokeContainer.textContent;
+  jokeName = jokeName.replace(/[^\w\s]/gi, '');
+
+  const ratingsRef = database.ref(`jokes/${jokeName}/ratings`);
+  const snapshot = await ratingsRef.once('value');
+  let ratings = snapshot.val();
+
+  if (!ratings) {
+    ratings = [];
+  }
+
+  ratings.push(rating);
+
+  ratingsRef.set(ratings);
+  displayAverageRating();
+});
+
+async function displayAverageRating() {
+  const jokeContainer = document.getElementById('joke-container');
+  let jokeName = jokeContainer.textContent;
+  jokeName = jokeName.replace(/[^\w\s]/gi, '');
+
+  const ratingsRef = database.ref(`jokes/${jokeName}/ratings`);
+  const snapshot = await ratingsRef.once('value');
+  let ratings = snapshot.val();
+
+  if (!ratings) {
+    ratings = [];
+  }
+
+  const sum = ratings.reduce((a, b) => a + b, 0);
+  const avg = sum / ratings.length;
+
+  const averageRatingContainer = document.getElementById('average-rating-container');
+  averageRatingContainer.textContent = `Average rating: ${avg}`;
+}
+  
+  
   // Display the joke when the page loads
   displayJoke();
 
