@@ -55,10 +55,22 @@ firebase.initializeApp(firebaseConfig);
 const database = firebase.database();
 
 async function getJoke() {
-  const res = await fetch('https://v2.jokeapi.dev/joke/Any?blacklistFlags=nsfw,racist');
-  const joke = await res.json();
-  return joke;
+  try {
+    const response = await fetch(API_URL);
+    const data = await response.json();
+    if (data.error) {
+      throw new Error(data.error);
+    }
+    const joke = data.joke;
+    if (!joke) {
+      throw new Error('Joke data is not in the expected format');
+    }
+    // Rest of the function code goes here
+  } catch (error) {
+    console.error(error);
+  }
 }
+
 
 async function displayJoke() {
   const joke = await getJoke();
