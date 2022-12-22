@@ -52,23 +52,59 @@ const firebaseConfig = {
 };
 firebase.initializeApp(firebaseConfig);
 
-// Get the joke name and rating from the form
-const jokeName = form.elements['joke-name'].value;
-const rating = form.elements.rating.value;
+const jokeContainer = document.querySelector("#joke-container");
+const ratingForm = document.querySelector("#rating-form");
+const averageRating = document.querySelector("#average-rating");
 
-// Remove special characters from the joke name
-jokeName = jokeName.replace(/[^\w\s]/gi, '');
+async function getJoke() {
+  // Fetch joke from API
+  const response = await fetch("https://v2.jokeapi.dev/joke/Any?blacklistFlags=nsfw,racist");
+  const joke = await response.json();
 
-// Save the joke name and rating to the database
-const ratingsRef = database.ref(`jokes/${jokeName}/ratings`);
-ratingsRef.push(rating);
+  // Display joke on page
+  jokeContainer.innerHTML = joke.joke;
 
-// Calculate the average rating and update it in the database
-ratingsRef.once('value', (snapshot) => {
-  const ratings = snapshot.val();
-  const sum = Object.values(ratings).reduce((a, b) => a + b, 0);
-  const avg = sum / Object.keys(ratings).length;
-  database.ref(`jokes/${jokeName}`).update({averageRating: avg});
+  // Calculate average rating for joke
+  let ratingsSum = 0;
+  let numRatings = 0;
+  firebase
+    .database()
+    .ref("jokes")
+    .child(joke.joke.replace(/[^\w\s]/gi, ""))
+    .child("ratings")
+    .once("value", snapshot => {
+      snapshot.forEach(childSnapshot => {
+        ratingsSum += childSnapshot.val();
+        numRatings++;
+      });
+      const avgRating = ratingsSum / numRatings;
+      averageRating.innerHTML = avgRating.toFixed(2);
+    });
+}
+
+// Fetch initial joke
+getJoke();
+
+ratingForm.addEventListener("submit", event => {
+  event.preventDefault();
+
+  // Get rating from form
+  const rating = ratingForm.elements.rating.value;
+
+  // Store rating in database
+  firebase
+    .database()
+    .ref("jokes")
+    .child(joke.joke.replace(/[^\w\s]/gi, ""))
+    .child("ratings")
+    .push(rating);
+
+  // Update average rating on page
+  const newRating = (ratingsSum + parseInt(rating)) / (numRatings + 1);
+  averageRating.innerHTML = newRating.toFixed(2);
+
+  // Reset form
+  ratingForm.reset();
 });
 
 
@@ -165,48 +201,5 @@ form.addEventListener("submit", (event) => {
 
 
 warnAndSendJoke();
-
-    
-        const jokesRef = firebase.database().ref('jokes');
-
-    // Function to fetch and display a random joke
-    const getJoke = () => {
-      jokesRef.once('value').then(snapshot => {
-        // Get all jokes in the database
-        const jokes = snapshot.val();
-
-        // Choose a random joke
-        const jokeKeys = Object.keys(jokes);
-        const randomIndex = Math.floor(Math.random() * jokeKeys.length);
-        const jokeName = jokeKeys[randomIndex];
-        const joke = jokes[jokeName];
-
-        // Display the joke
-        const jokeContainer = document.getElementById('joke-container');
-        jokeContainer.textContent = joke.joke;
-
-        // Fetch and display the average rating for the joke
-        const ratingsRef = jokesRef.child(jokeName).child('ratings');
-        ratingsRef.once('value').then(snapshot => {
-          const ratings = snapshot.val();
-          if (ratings) {
-            // Calculate the average rating
-            const ratingValues = Object.values(ratings);
-            const total = ratingValues.reduce((a, b) => a + b, 0);
-            const average = total / ratingValues.length;
-
-            // Display the average rating
-            const averageRatingContainer = document.getElementById('average-rating-container');
-            averageRatingContainer.textContent = `Average rating: ${average}`;
-          }
-        });
-      });
-    };
-
-    // Fetch and display a random joke when the page loads
-    getJoke();
-
-    // Handle form submission for rating a joke
-    const form = document.getElement
   </script>
 </html>
