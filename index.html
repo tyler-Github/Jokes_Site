@@ -12,7 +12,6 @@
    <body>
     <div id="joke-container">
       <!-- Joke will be inserted here -->
-        <div id="average-rating-container"></div>
     </div>
      
      <form id="rating-form">
@@ -20,8 +19,10 @@
   <input type="range" min="1" max="5" value="3" id="rating">
   <button type="submit">Submit</button>
 </form>
-    <!-- Average rating will be inserted here -->
-  </div>
+   
+             <div id="average-rating-container">
+     </div>
+
      
     <button onclick="getJoke()">Show me a joke!</button>
     <button onclick="copyJoke()" id="copy-button">Copy joke</button>
