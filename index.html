@@ -55,7 +55,7 @@ const form = document.getElementById("rating-form");
 function submitRating() {
   // Get the name of the joke from the input field
   const jokeContainer = document.getElementById('joke-container');
-   const jokeName = jokeContainer.innerText;
+const jokeName = jokeContainer.dataset.jokeName;
 
   // Create a reference to the joke's ratings in the database
     const ratingsRef = firebase.database().ref(`jokes/${jokeName}/ratings`);
