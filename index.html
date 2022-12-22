@@ -166,5 +166,47 @@ form.addEventListener("submit", (event) => {
 
 warnAndSendJoke();
 
+    
+        const jokesRef = firebase.database().ref('jokes');
+
+    // Function to fetch and display a random joke
+    const getJoke = () => {
+      jokesRef.once('value').then(snapshot => {
+        // Get all jokes in the database
+        const jokes = snapshot.val();
+
+        // Choose a random joke
+        const jokeKeys = Object.keys(jokes);
+        const randomIndex = Math.floor(Math.random() * jokeKeys.length);
+        const jokeName = jokeKeys[randomIndex];
+        const joke = jokes[jokeName];
+
+        // Display the joke
+        const jokeContainer = document.getElementById('joke-container');
+        jokeContainer.textContent = joke.joke;
+
+        // Fetch and display the average rating for the joke
+        const ratingsRef = jokesRef.child(jokeName).child('ratings');
+        ratingsRef.once('value').then(snapshot => {
+          const ratings = snapshot.val();
+          if (ratings) {
+            // Calculate the average rating
+            const ratingValues = Object.values(ratings);
+            const total = ratingValues.reduce((a, b) => a + b, 0);
+            const average = total / ratingValues.length;
+
+            // Display the average rating
+            const averageRatingContainer = document.getElementById('average-rating-container');
+            averageRatingContainer.textContent = `Average rating: ${average}`;
+          }
+        });
+      });
+    };
+
+    // Fetch and display a random joke when the page loads
+    getJoke();
+
+    // Handle form submission for rating a joke
+    const form = document.getElement
   </script>
 </html>
