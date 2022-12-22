@@ -55,92 +55,48 @@ firebase.initializeApp(firebaseConfig);
 const database = firebase.database();
 
 async function getJoke() {
-  const response = await fetch('https://v2.jokeapi.dev/joke/Any?blacklistFlags=nsfw,racist');
-  const data = await response.json();
-  const joke = data.joke;
-
-  // remove special characters from joke name
-  const jokeName = joke.replace(/[^a-zA-Z0-9]/g, '');
-
-  // insert joke into page
-  const jokeContainer = document.querySelector('#joke-container');
-  jokeContainer.textContent = joke;
-
-  // submit rating
-  const form = document.querySelector('#rating-form');
-  form.addEventListener('submit', e => {
-    e.preventDefault();
-    const rating = form.elements.rating.value;
-    submitRating(jokeName, rating);
-  });
-
-  // fetch average rating
-  const ratingsRef = firebase.database().ref(`jokes/${jokeName}/ratings`);
-  ratingsRef.on('value', snapshot => {
-    const ratings = snapshot.val();
-    let total = 0;
-    let count = 0;
-    for (const rating in ratings) {
-      total += ratings[rating];
-      count++;
-    }
-    const average = total / count;
-    const ratingContainer = document.querySelector('#rating-container');
-    ratingContainer.textContent = `Average rating: ${average}`;
-  });
+  const jokeSnapshot = await database.ref('jokes').once('value');
+  const jokes = jokeSnapshot.val();
+  const jokeKeys = Object.keys(jokes);
+  const randomJokeKey = jokeKeys[Math.floor(Math.random() * jokeKeys.length)];
+  const joke = jokes[randomJokeKey];
+  displayJoke(joke, randomJokeKey);
 }
 
 function submitRating(jokeName, rating) {
   firebase.database().ref(`jokes/${jokeName}/ratings`).push(rating);
 }
 
-getJoke();
-
     
 
-async function displayJoke() {
-  const joke = await getJoke();
-  const jokeContainer = document.getElementById('joke-container');
-  const jokeText = joke.joke;
-  jokeContainer.innerText = jokeText;
+function displayJoke(joke, jokeKey) {
+  const jokeContainer = document.querySelector('#joke-container');
+  jokeContainer.innerHTML = `
+    <div>${joke.joke}</div>
+    <form id="rating-form">
+      <label for="rating">Rate this joke:</label>
+      <input type="range" min="1" max="5" value="3" id="rating">
+      <button type="submit">Submit</button>
+    </form>
+  `;
 
-  // Remove special characters from joke name
-  const jokeName = jokeText.replace(/[^\w\s]/gi, '');
+  const ratingForm = document.querySelector('#rating-form');
+  ratingForm.addEventListener('submit', (event) => {
+    event.preventDefault();
+    const rating = event.target.elements.rating.value;
+    submitRating(jokeKey, rating);
+  });
 
-  // Get average rating for joke from database
-  const ratingsRef = database.ref(`jokes/${jokeName}/ratings`);
-  const snapshot = await ratingsRef.once('value');
-  const ratings = snapshot.val();
-  let sum = 0;
-  let count = 0;
-  for (const rating in ratings) {
-    sum += ratings[rating];
-    count += 1;
-  }
-  const avgRating = sum / count;
-
-  // Display rating
-  const ratingContainer = document.getElementById('rating-container');
-  ratingContainer.innerText = `Rating: ${avgRating}`;
+  getAverageRating(jokeKey).then((averageRating) => {
+    const ratingContainer = document.querySelector('#rating-container');
+    ratingContainer.innerHTML = `Average rating: ${averageRating}`;
+  });
 }
 
-function submitRating(event) {
-  event.preventDefault();
-
-  // Get joke and rating from form
-  const form = event.target;
-  const rating = form.elements.rating.value;
-  const jokeContainer = document.getElementById('joke-container');
-  const jokeText = jokeContainer.innerText;
-
-  // Remove special characters from joke name
-  const jokeName = jokeText.replace(/[^\w\s]/gi, '');
-
-  // Add rating to database
-  const ratingsRef = database.ref(`jokes/${jokeName}/ratings`);
-  ratingsRef.push(rating);
+function submitRating(jokeKey, rating) {
+  database.ref(`jokes/${jokeKey}/ratings`).push(rating);
 }
-
+    
 const form = document.getElementById('rating-form');
 form.addEventListener('submit', submitRating);
 displayJoke();
@@ -225,19 +181,15 @@ displayJoke();
 
 
 
-async function getAverageRating(jokeName) {
-  const ratingsRef = database.ref(`jokes/${jokeName}/ratings`);
-  const snapshot = await ratingsRef.once("value");
-  const ratings = snapshot.val();
-  if (!ratings) {
-    return;
-  }
+async function getAverageRating(jokeKey) {
+  const ratingsSnapshot = await database.ref(`jokes/${jokeKey}/ratings`).once('value');
+  const ratings = ratingsSnapshot.val();
   const ratingValues = Object.values(ratings);
-  const averageRating = ratingValues.reduce((a, b) => a + b, 0) / ratingValues.length;
-  const ratingContainer = document.getElementById("rating-container");
-  ratingContainer.innerHTML = `Average rating: ${averageRating}`;
+  const sum = ratingValues.reduce((accumulator, rating) => accumulator + rating, 0);
+  return sum / ratingValues.length;
 }
 
+getJoke();
 
 
 
