@@ -87,59 +87,32 @@ function displayJoke(joke) {
 
 
 
-// Displays the average rating for the specified joke
-async function displayAverageRating(joke) {
-  // Remove any special characters from the joke
-  const safeJoke = joke.replace(/[^a-zA-Z0-9]/g, '');
+function submitRating(event) {
+  event.preventDefault(); // prevent form from reloading the page
+  const form = event.target;
+  const rating = form.elements.rating.value;
+  const jokeName = form.elements.jokeName.value;
+  // Save rating to Firebase database
+  database.ref(`jokes/${jokeName}/ratings`).push({ rating });
+}
 
-  // Get the joke's ratings from the database
-  const ratingsRef = firebase.database().ref(`jokes/${safeJoke}/ratings`);
+// Display average rating for a joke
+async function displayAverageRating(jokeName) {
+  const ratingsRef = database.ref(`jokes/${jokeName}/ratings`);
   const snapshot = await ratingsRef.once('value');
   const ratings = snapshot.val();
-
-  // Calculate the average rating
-  let total = 0;
+  // Calculate average rating
+  let sum = 0;
   let count = 0;
-  for (const rating in ratings) {
-    total += ratings[rating];
+  for (const key in ratings) {
+    sum += ratings[key].rating;
     count++;
   }
-  const average = total / count;
-
-  // Display the average rating in the average rating container
+  const average = sum / count;
+  // Display average rating on page
   const averageRatingContainer = document.getElementById('average-rating-container');
-  averageRatingContainer.innerHTML = `Average rating: ${average}`;
+  averageRatingContainer.textContent = `Average rating: ${average}`;
 }
-
-// Submits the rating for the current joke
-async function submitRating(event) {
-  // Prevent the form from refreshing the page
-  event.preventDefault();
-
-  // Get the rating from the form
-  const form = document.getElementById('rating-form');
-  const rating = form.elements.rating.value;
-
-  // Get the joke from the joke container
-  const jokeContainer = document.getElementById('joke-container');
-  const joke = jokeContainer.innerHTML;
-
-  // Remove any special characters from the joke
-  const safeJoke = joke.replace(/[^a-zA-Z0-9]/g, '');
-
-  // Add the rating to the database
-  const ratingsRef = firebase.database().ref(`jokes/${safeJoke}/ratings`);
-  ratingsRef.push(rating);
-
-  // Display the updated average rating
-  displayAverageRating(joke);
-}
-  
-  getJoke();
-
-window.onload = function() {
-  displayJoke();
-};
 
 
 </script>
