@@ -159,22 +159,36 @@ async function getJoke() {
   event.preventDefault();
 
   const form = event.target;
-  const jokeElement = document.querySelector('#joke-container');
-  const jokeText = jokeElement.textContent;
+  const jokeContainer = document.querySelector('#joke-container');
+  const jokeText = jokeContainer.textContent;
   const rating = form.elements.rating.value;
 
-  const sanitizedJokeText = jokeText.replace(/[^a-zA-Z0-9 ]/g, '');
-  const ratingsRef = database.ref(`jokes/${sanitizedJokeText}/ratings`);
+  // Ensure the joke text does not contain any special characters
+  // that are not allowed in Firebase database keys
+  const safeJokeText = jokeText.replace(/[.$\[\]#]/g, '');
 
-  const snapshot = await ratingsRef.once('value');
-  const ratings = snapshot.val() || [];
+  // Get the ratings object for the joke from the database
+  const ratingsRef = database.ref(`jokes/${safeJokeText}/ratings`);
+  let ratings = await ratingsRef.once('value');
+  ratings = ratings.val() || [];
+
+  // Add the new rating to the ratings array
   ratings.push(rating);
 
-  ratingsRef.set(ratings);
+  // Calculate the average rating for the joke
+  const sum = ratings.reduce((a, b) => a + b, 0);
+  const averageRating = sum / ratings.length;
 
-  const averageRating = ratings.reduce((a, b) => a + b, 0) / ratings.length;
-  document.querySelector('#average-rating-container').textContent = averageRating;
+  // Update the ratings array in the database
+  await ratingsRef.set(ratings);
+
+  // Update the average rating display on the page
+  const averageRatingContainer = document.querySelector('#average-rating-container');
+  averageRatingContainer.textContent = averageRating;
 }
+
+const ratingForm = document.querySelector('#rating-form');
+ratingForm.addEventListener('submit', submitRating);
 
 // Function to display the joke on the page
 function displayJoke(joke) {
