@@ -57,7 +57,7 @@ function submitRating() {
   const jokeName = document.querySelector('.joke-container');;
 
   // Create a reference to the joke's ratings in the database
-  const ratingsRef = database.ref(`jokes/${jokeName}/ratings`);
+    const ratingsRef = firebase.database().ref(`jokes/${jokeName}/ratings`);
 
   // Get the rating from the form
   const rating = form.elements.rating.value;
