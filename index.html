@@ -50,36 +50,25 @@ const firebaseConfig = {
 };
 firebase.initializeApp(firebaseConfig);
 
-const form = document.getElementById("rating-form");
+// Get the joke name and rating from the form
+const jokeName = form.elements['joke-name'].value;
+const rating = form.elements.rating.value;
 
-function submitRating() {
-  // Get the name of the joke from the input field
-  const jokeContainer = document.getElementById('joke-container');
-  const jokeName = document.querySelector("#joke-container").textContent.replace(/[^a-zA-Z0-9]/g, "");
+// Remove special characters from the joke name
+jokeName = jokeName.replace(/[^\w\s]/gi, '');
 
-  // Create a reference to the joke's ratings in the database
-    const ratingsRef = firebase.database().ref(`jokes/${jokeName}/ratings`);
+// Save the joke name and rating to the database
+const ratingsRef = database.ref(`jokes/${jokeName}/ratings`);
+ratingsRef.push(rating);
 
-  // Get the rating from the form
-  const rating = form.elements.rating.value;
+// Calculate the average rating and update it in the database
+ratingsRef.once('value', (snapshot) => {
+  const ratings = snapshot.val();
+  const sum = Object.values(ratings).reduce((a, b) => a + b, 0);
+  const avg = sum / Object.keys(ratings).length;
+  database.ref(`jokes/${jokeName}`).update({averageRating: avg});
+});
 
-  // Update the joke's rating by calculating the average of all ratings
-  ratingsRef.once("value").then((snapshot) => {
-    const ratings = snapshot.val();
-    let sum = 0;
-    let count = 0;
-    for (const key in ratings) {
-      if (ratings.hasOwnProperty(key)) {
-        sum += ratings[key].rating;
-        count++;
-      }
-    }
-    sum += rating;
-    count++;
-    const average = sum / count;
-    ratingsRef.set(average);
-  });
-}
 
 
 
