@@ -50,8 +50,6 @@ const firebaseConfig = {
 };
 firebase.initializeApp(firebaseConfig);
 
-// Get a reference to the database
-// Define the submitRating function
 function submitRating() {
   // Get the name of the joke from the input field
   const jokeName = document.getElementById("joke-name").value;
@@ -62,9 +60,19 @@ function submitRating() {
   // Get the rating from the form
   const rating = form.elements.rating.value;
 
-  // Add the rating to the database
-  ratingsRef.push({
-    rating,
+  // Update the joke's rating by calculating the average of all ratings
+  ratingsRef.once("value").then((snapshot) => {
+    const ratings = snapshot.val();
+    let sum = 0;
+    let count = 0;
+    for (const key in ratings) {
+      if (ratings.hasOwnProperty(key)) {
+        sum += ratings[key].rating;
+        count++;
+      }
+    }
+    const average = sum / count;
+    ratingsRef.set(average);
   });
 }
 
