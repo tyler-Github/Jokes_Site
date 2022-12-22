@@ -23,6 +23,18 @@ body {
     background-color: #fff;
   }
   
+#average-rating-container {
+      position: absolute;
+    top: 30%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    background-color: #fff;
+}
   /* Style the button */
   button {
     display: block;
