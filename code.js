@@ -40,3 +40,25 @@ async function getJoke() {
     console.error(error);
   }
 }
+
+
+const form = document.getElementById('rating-form');
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const rating = form.elements.rating.value;
+  const joke = document.getElementById('joke-container').innerText;
+
+  const jokeKey = joke.replace(/[^a-zA-Z0-9]/g, '');
+
+  const ratingsRef = firebase.database().ref(`jokes/${jokeKey}/ratings`);
+  const snapshot = await ratingsRef.once('value');
+  const ratings = snapshot.val() || [];
+  ratings.push(rating);
+
+  await ratingsRef.set(ratings);
+
+  displayAverageRating(jokeKey);
+});
+
