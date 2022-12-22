@@ -133,13 +133,13 @@ async function getJoke() {
 
  async function submitRating(event) {
   event.preventDefault();
-  const form = event.target;
+  const form = document.getElementById('rating-form');
   const jokeName = form.elements.jokeName.value;
 
   // Replace invalid characters with underscores
   const sanitizedJokeName = jokeName.replace(/[.#$\[\]]/g, '_');
 
-  const rating = form.elements.rating.value;
+  const jokeName = form.elements.jokeName.value;
 
   const ratingsRef = database.ref(`jokes/${sanitizedJokeName}/ratings`);
   const snapshot = await ratingsRef.once('value');
@@ -152,6 +152,7 @@ async function getJoke() {
   const averageRatingContainer = document.getElementById('average-rating-container');
   averageRatingContainer.textContent = averageRating;
 }
+
 
 
 const ratingForm = document.querySelector('#rating-form');
