@@ -54,14 +54,28 @@ firebase.initializeApp(firebaseConfig);
 
 const database = firebase.database();
 
-async function getJoke() {
-  const jokeSnapshot = await database.ref('jokes').once('value');
-  const jokes = jokeSnapshot.val();
-  const jokeKeys = Object.keys(jokes);
-  const randomJokeKey = jokeKeys[Math.floor(Math.random() * jokeKeys.length)];
-  const joke = jokes[randomJokeKey];
-  displayJoke(joke, randomJokeKey);
+function getJoke() {
+  fetch('https://api.jokes.ml/jokes/random')
+    .then(response => response.json())
+    .then(data => {
+      const joke = data.joke;
+      const jokeName = joke.replace(/[^a-zA-Z0-9]/g, '');
+      const ratingsRef = firebase.database().ref(`jokes/${jokeName}/ratings`);
+
+      ratingsRef.once('value').then(snapshot => {
+        const ratings = snapshot.val();
+        let sum = 0;
+        let count = 0;
+        for (const rating in ratings) {
+          sum += ratings[rating];
+          count++;
+        }
+        const avgRating = sum / count;
+        displayJoke(joke, avgRating);
+      });
+    });
 }
+
 
 function submitRating(jokeName, rating) {
   firebase.database().ref(`jokes/${jokeName}/ratings`).push(rating);
@@ -69,23 +83,14 @@ function submitRating(jokeName, rating) {
 
     
 
-function displayJoke(joke, jokeKey) {
-  const jokeContainer = document.querySelector('#joke-container');
+function displayJoke(joke, avgRating) {
+  const jokeContainer = document.getElementById('joke-container');
   jokeContainer.innerHTML = `
-    <div>${joke.joke}</div>
-    <form id="rating-form">
-      <label for="rating">Rate this joke:</label>
-      <input type="range" min="1" max="5" value="3" id="rating">
-      <button type="submit">Submit</button>
-    </form>
+    <p>${joke}</p>
+    <p>Average Rating: ${avgRating}</p>
   `;
+}
 
-  const ratingForm = document.querySelector('#rating-form');
-  ratingForm.addEventListener('submit', (event) => {
-    event.preventDefault();
-    const rating = event.target.elements.rating.value;
-    submitRating(jokeKey, rating);
-  });
 
   getAverageRating(jokeKey).then((averageRating) => {
     const ratingContainer = document.querySelector('#rating-container');
