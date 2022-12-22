@@ -96,6 +96,7 @@ function submitRating(jokeName, rating) {
 
 getJoke();
 
+    
 
 async function displayJoke() {
   const joke = await getJoke();
@@ -224,6 +225,30 @@ displayJoke();
 
 
 
+async function getAverageRating() {
+  // First, get the joke name from the joke container element
+  const jokeName = document.getElementById("joke-container").textContent;
+
+  // Next, get the ratings for the joke from the database
+  const ratingsRef = firebase.database().ref(`jokes/${jokeName}/ratings`);
+  const snapshot = await ratingsRef.once('value');
+  const ratings = snapshot.val();
+
+  // Calculate the average rating
+  let sum = 0;
+  let count = 0;
+  for (const rating of Object.values(ratings)) {
+    sum += rating;
+    count++;
+  }
+  const averageRating = sum / count;
+
+  // Display the average rating on the page
+  const ratingElement = document.getElementById("rating");
+  ratingElement.innerHTML = `Average rating: ${averageRating}`;
+}
+
+getAverageRating();
 
 
 
