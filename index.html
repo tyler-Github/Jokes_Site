@@ -72,11 +72,7 @@ async function getJoke() {
   document.getElementById('joke-container').innerHTML = joke;
 }
 
-  // Display the joke on the page
-  async function displayJoke() {
-    const joke = await getJoke();
-    document.querySelector('#joke-container').innerHTML = joke.joke;
-  }
+
 
   // Handle the form submission
   async function submitRating(event) {
@@ -88,18 +84,36 @@ async function getJoke() {
     displayAverageRating();
   }
 
-  // Calculate and display the average rating for the joke
-  async function displayAverageRating() {
-    const joke = await getJoke();
-    const ratingsRef = firebase.database().ref(`jokes/${joke.joke}/ratings`);
-    ratingsRef.once('value').then(function(snapshot) {
-      const ratings = snapshot.val();
-      const sum = Object.values(ratings).reduce((a, b) => a + b, 0);
-      const average = sum / Object.keys(ratings).length;
-      document.querySelector('#average-rating-container').innerHTML = `Average rating: ${average}`;
-    });
-  }
+  // Get the joke from the API
+fetch("https://v2.jokeapi.dev/joke/Any?blacklistFlags=religious,political,racist,sexist")
+  .then(response => response.json())
+  .then(data => {
+    // Get the joke text and clean it up by removing any special characters
+    var jokeText = data.joke.replace(/[^a-zA-Z0-9 ]/g, "");
 
+    // Check if the joke is already in the database
+    var jokeRef = database.ref("jokes/" + jokeText);
+    jokeRef.once("value", function(snapshot) {
+      if (snapshot.exists()) {
+        // If the joke is already in the database, just display it
+        displayJoke(jokeText);
+      } else {
+        // If the joke is not in the database, add it and then display it
+        jokeRef.set({
+          ratings: 0,
+          numRatings: 0,
+          averageRating: 0
+        });
+        displayJoke(jokeText);
+      }
+    });
+  });
+
+// Function to display the joke on the page
+function displayJoke(joke) {
+  document.getElementById("joke-container").innerHTML = joke;
+}
+  
   // Display the joke when the page loads
   displayJoke();
 
