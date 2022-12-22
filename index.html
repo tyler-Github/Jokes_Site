@@ -83,6 +83,34 @@ async function displayJoke() {
   `;
 }
 
+    const jokeContainer = document.getElementById('joke-container');
+const averageRatingContainer = document.getElementById('average-rating-container');
+
+// Get the joke text from the joke container
+const joke = jokeContainer.textContent;
+
+// Check if the joke has a rating in the database
+const ratingsRef = firebase.database().ref(`jokes/${joke}/ratings`);
+ratingsRef.once('value', snapshot => {
+  // If the joke has a rating, calculate the average and display it
+  if (snapshot.exists()) {
+    let ratings = snapshot.val();
+    let sum = 0;
+    let count = 0;
+    for (const rating in ratings) {
+      sum += ratings[rating];
+      count++;
+    }
+    const average = sum / count;
+    averageRatingContainer.textContent = `Average rating: ${average}`;
+  }
+  // If the joke does not have a rating, display a message saying so
+  else {
+    averageRatingContainer.textContent = 'This joke has not been rated yet';
+  }
+});
+
+    
 // Get a joke from the API
 async function getJoke() {
   const response = await fetch('https://v2.jokeapi.dev/joke/Any?blacklistFlags=nsfw,racist');
