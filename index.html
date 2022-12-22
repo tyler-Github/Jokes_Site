@@ -63,32 +63,19 @@ const jokesRef = database.ref("jokes");
 
 
 async function getJoke() {
-  // Fetch joke from API
-  const response = await fetch('https://v2.jokeapi.dev/joke/Any?blacklistFlags=religious,political,racist,sexist');
-  const joke = await response.json();
-
-  // If joke has a "text" property, display it
-  if (joke.text) {
-    displayJoke(joke.text);
-  } else {
-    // Otherwise, retrieve the last joke from local storage and display it
-    const lastJoke = localStorage.getItem('lastJoke');
-    if (lastJoke) {
-      displayJoke(lastJoke);
+  try {
+    const response = await fetch('https://v2.jokeapi.dev/joke/Any?blacklistFlags=religious,political,racist,sexist');
+    const data = await response.json();
+    const joke = data.joke || localStorage.getItem('lastJoke');
+    if (joke) {
+      displayJoke(joke);
+      localStorage.setItem('lastJoke', joke);
     } else {
-      // If there is no last joke in local storage, display an error message
-      displayJoke('Error: Could not retrieve joke from API or local storage');
+      console.log('Joke received from API does not have a "joke" property');
     }
+  } catch (error) {
+    console.error(error);
   }
-}
-
-function displayJoke(joke) {
-  // Store joke in local storage
-  localStorage.setItem('lastJoke', joke);
-
-  // Update joke container with new joke
-  const jokeContainer = document.getElementById('joke-container');
-  jokeContainer.textContent = joke;
 }
 
 
