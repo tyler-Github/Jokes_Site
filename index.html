@@ -54,7 +54,7 @@ const form = document.getElementById("rating-form");
 
 function submitRating() {
   // Get the name of the joke from the input field
-  const jokeName = form.elements.jokeName.value;
+  const jokeName = document.querySelector('.joke-container');;
 
   // Create a reference to the joke's ratings in the database
   const ratingsRef = database.ref(`jokes/${jokeName}/ratings`);
