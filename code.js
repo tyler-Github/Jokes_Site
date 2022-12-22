@@ -17,29 +17,14 @@ const database = firebase.database();
 const jokesRef = database.ref("jokes");
 
 async function getJoke() {
-  try {
-    // Make a GET request to the API
-    const response = await axios.get("https://v2.jokeapi.dev/joke/Any", {
-      params: {
-        blacklistFlags: "religious,political,racist,sexist",
-      },
-    });
+  // Get a joke from the API
+  const response = await fetch('https://v2.jokeapi.dev/joke/Any?blacklistFlags=religious,political,racist,sexist');
+  const joke = await response.json();
 
-    // Extract the joke and its ID from the response
-    const joke = response.data.joke;
-    const jokeId = response.data.id;
-
-    // Display the joke on the page
-    const jokeContainer = document.getElementById("joke-container");
-    jokeContainer.innerHTML = joke;
-
-    // Store the joke ID in a hidden input field
-    const jokeInput = document.getElementById("joke-input");
-    jokeInput.value = jokeId;
-  } catch (error) {
-    console.error(error);
-  }
+  // Display the joke
+  displayJoke(joke);
 }
+
 
 
 const form = document.getElementById('rating-form');
