@@ -54,7 +54,7 @@ firebase.initializeApp(firebaseConfig);
 
 function submitRating() {
   // Get the name of the joke from the input field
-  const jokeName = document.getElementById("joke-name").value;
+  const jokeName = form.elements.jokeName.value;
 
   // Create a reference to the joke's ratings in the database
   const ratingsRef = database.ref(`jokes/${jokeName}/ratings`);
@@ -77,6 +77,7 @@ function submitRating() {
     ratingsRef.set(average);
   });
 }
+
 
 // When the form is submitted, submit the rating to the database
 form.addEventListener("submit", (event) => {
