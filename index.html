@@ -65,21 +65,32 @@ const jokesRef = database.ref("jokes");
 async function getJoke() {
   // Fetch joke from API
   const response = await fetch('https://v2.jokeapi.dev/joke/Any?blacklistFlags=religious,political,racist,sexist');
-  const jokeData = await response.json();
+  const joke = await response.json();
 
-  // Extract joke text from response
-  const jokeText = jokeData.joke;
-
-  // Display joke on page
-  displayJoke(jokeText);
+  // If joke has a "text" property, display it
+  if (joke.text) {
+    displayJoke(joke.text);
+  } else {
+    // Otherwise, retrieve the last joke from local storage and display it
+    const lastJoke = localStorage.getItem('lastJoke');
+    if (lastJoke) {
+      displayJoke(lastJoke);
+    } else {
+      // If there is no last joke in local storage, display an error message
+      displayJoke('Error: Could not retrieve joke from API or local storage');
+    }
+  }
 }
-
-
 
 function displayJoke(joke) {
+  // Store joke in local storage
+  localStorage.setItem('lastJoke', joke);
+
+  // Update joke container with new joke
   const jokeContainer = document.getElementById('joke-container');
-  jokeContainer.innerText = joke;
+  jokeContainer.textContent = joke;
 }
+
 
 
 // Displays the average rating for the specified joke
