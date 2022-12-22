@@ -131,56 +131,44 @@ async function getJoke() {
 
 
 
-function submitRating(event) {
-  event.preventDefault();
+document.addEventListener('DOMContentLoaded', () => {
+  const form = document.getElementById('rating-form');
+  form.addEventListener('submit', submitRating);
 
-  const form = event.target;
-  const jokeName = form.elements.jokeName.value;
-  const rating = form.elements.rating.value;
+  async function submitRating(event) {
+    event.preventDefault();
 
-  // Clean up joke name and remove special characters
-  jokeName = jokeName.replace(/[^a-zA-Z0-9 ]/g, '');
+    const rating = form.elements.rating.value;
+    const jokeContainer = document.getElementById('joke-container');
+    const jokeName = jokeContainer.textContent;
 
-  // Get the jokes reference in the database
-  const jokesRef = firebase.database().ref('jokes');
+    // Remove any special characters from joke name
+    jokeName = jokeName.replace(/[^\w\s]/gi, '');
 
-  // Find the joke in the database and update its ratings
-  jokesRef.child(jokeName).once('value', (snapshot) => {
-    // If the joke doesn't exist in the database, add it
-    if (!snapshot.exists()) {
-      jokesRef.child(jokeName).set({ ratings: [rating] });
-    } else {
-      // Otherwise, update the ratings
-      const ratings = snapshot.val().ratings;
-      ratings.push(rating);
+    const ratingsRef = database.ref(`jokes/${jokeName}/ratings`);
+    const snapshot = await ratingsRef.once('value');
+    let ratings = snapshot.val();
 
-      jokesRef.child(jokeName).update({ ratings });
+    if (!ratings) {
+      ratings = [];
     }
-  });
 
-  // Calculate the average rating and display it
-  displayAverageRating(jokeName);
-}
+    ratings.push(rating);
 
-async function displayAverageRating(jokeName) {
-  // Clean up joke name and remove special characters
-  jokeName = jokeName.replace(/[^a-zA-Z0-9 ]/g, '');
+    ratingsRef.set(ratings);
 
-  // Get the jokes reference in the database
-  const jokesRef = firebase.database().ref('jokes');
+    const averageRating = getAverageRating(ratings);
+    const averageRatingContainer = document.getElementById('average-rating-container');
+    averageRatingContainer.textContent = `Average rating: ${averageRating}`;
+  }
+});
 
-  // Find the joke in the database and calculate its average rating
-  jokesRef.child(jokeName).once('value', (snapshot) => {
-    if (snapshot.exists()) {
-      const ratings = snapshot.val().ratings;
-      const sum = ratings.reduce((a, b) => a + b, 0);
-      const average = sum / ratings.length;
-
-      // Display the average rating
-      const averageRatingContainer = document.getElementById('average-rating-container');
-      averageRatingContainer.innerHTML = `Average rating: ${average}`;
-    }
-  });
+function getAverageRating(ratings) {
+  let sum = 0;
+  for (const rating of ratings) {
+    sum += parseInt(rating, 10);
+  }
+  return sum / ratings.length;
 }
 
 
