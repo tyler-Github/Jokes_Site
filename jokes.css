@@ -23,7 +23,7 @@ body {
     background-color: #fff;
   }
   
-#average-rating-container {
+average-rating-container {
       position: absolute;
     top: 50%;
     left: 50%;
