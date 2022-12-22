@@ -73,10 +73,13 @@ function submitRating() {
         count++;
       }
     }
+    sum += rating;
+    count++;
     const average = sum / count;
     ratingsRef.set(average);
   });
 }
+
 
 
 // When the form is submitted, submit the rating to the database
