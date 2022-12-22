@@ -97,22 +97,23 @@ async function submitRating(jokeId, rating) {
   ratingsRef.push(rating);
 }
 
-// Get the average rating for a joke
-async function getAverageRating(jokeId) {
-  // Get all the ratings for the joke from the database
-  const ratingsRef = database.ref(`jokes/${jokeId}/ratings`);
-  const snapshot = await ratingsRef.once('value');
-  const ratings = snapshot.val();
+async function getAverageRating(jokeKey) {
+  // Get the joke from the database
+  const jokeSnapshot = await database.ref(`jokes/${jokeKey}`).once('value');
+  const joke = jokeSnapshot.val();
 
-  // Calculate the average rating
-  let sum = 0;
-  let count = 0;
-  for (const key in ratings) {
-    sum += ratings[key];
-    count++;
+  // Check if the joke has ratings
+  if (joke && joke.ratings) {
+    // Calculate the average rating
+    const ratingSum = Object.values(joke.ratings).reduce((sum, rating) => sum + rating, 0);
+    const averageRating = ratingSum / Object.keys(joke.ratings).length;
+
+    // Display the average rating on the page
+    document.getElementById('rating-display').innerHTML = `Average rating: ${averageRating}`;
+  } else {
+    // If the joke doesn't have any ratings, display a message saying so
+    document.getElementById('rating-display').innerHTML = 'This joke has not been rated yet';
   }
-  const averageRating = sum / count;
-  return averageRating;
 }
 
 displayJoke();
