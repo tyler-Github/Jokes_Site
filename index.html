@@ -74,40 +74,26 @@ async function getJoke() {
 
 
 
-  // Handle the form submission
-  async function submitRating(event) {
-    event.preventDefault();
-    const joke = await getJoke();
-    const rating = event.target.elements.rating.value;
-    const ratingsRef = firebase.database().ref(`jokes/${joke.joke}/ratings`);
-    ratingsRef.push(rating);
-    displayAverageRating();
-  }
+ async function submitRating(event) {
+  event.preventDefault();
 
-  // Get the joke from the API
-fetch("https://v2.jokeapi.dev/joke/Any?blacklistFlags=religious,political,racist,sexist")
-  .then(response => response.json())
-  .then(data => {
-    // Get the joke text and clean it up by removing any special characters
-    var jokeText = data.joke.replace(/[^a-zA-Z0-9 ]/g, "");
+  const form = event.target;
+  const jokeElement = document.querySelector('#joke-container');
+  const jokeText = jokeElement.textContent;
+  const rating = form.elements.rating.value;
 
-    // Check if the joke is already in the database
-    var jokeRef = database.ref("jokes/" + jokeText);
-    jokeRef.once("value", function(snapshot) {
-      if (snapshot.exists()) {
-        // If the joke is already in the database, just display it
-        displayJoke(jokeText);
-      } else {
-        // If the joke is not in the database, add it and then display it
-        jokeRef.set({
-          ratings: 0,
-          numRatings: 0,
-          averageRating: 0
-        });
-        displayJoke(jokeText);
-      }
-    });
-  });
+  const sanitizedJokeText = jokeText.replace(/[^a-zA-Z0-9 ]/g, '');
+  const ratingsRef = database.ref(`jokes/${sanitizedJokeText}/ratings`);
+
+  const snapshot = await ratingsRef.once('value');
+  const ratings = snapshot.val() || [];
+  ratings.push(rating);
+
+  ratingsRef.set(ratings);
+
+  const averageRating = ratings.reduce((a, b) => a + b, 0) / ratings.length;
+  document.querySelector('#average-rating-container').textContent = averageRating;
+}
 
 // Function to display the joke on the page
 function displayJoke(joke) {
