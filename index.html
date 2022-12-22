@@ -65,9 +65,12 @@ const jokesRef = database.ref("jokes");
 
 async function getJoke() {
   const response = await fetch('https://v2.jokeapi.dev/joke/Any?blacklistFlags=religious,political,racist,sexist');
-  const jokeData = await response.json();
-  const joke = jokeData.joke;
-  displayJoke(joke);
+  const joke = await response.json();
+  if (joke.text) {
+    displayJoke(joke.text);
+  } else {
+    console.error('Joke received from API does not have a "text" property');
+  }
 }
 
 function displayJoke(joke) {
