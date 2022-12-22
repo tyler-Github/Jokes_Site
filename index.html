@@ -51,18 +51,27 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 
 // Get a reference to the database
-const jokeName = document.getElementById("joke-name").value;
+// Define the submitRating function
+function submitRating() {
+  // Get the name of the joke from the input field
+  const jokeName = document.getElementById("joke-name").value;
 
-// Create a reference to the joke's ratings in the database
-const ratingsRef = database.ref(`jokes/${jokeName}/ratings`);
+  // Create a reference to the joke's ratings in the database
+  const ratingsRef = database.ref(`jokes/${jokeName}/ratings`);
 
-// When the form is submitted, add the rating to the database
-form.addEventListener("submit", (event) => {
-  event.preventDefault();
+  // Get the rating from the form
   const rating = form.elements.rating.value;
+
+  // Add the rating to the database
   ratingsRef.push({
     rating,
   });
+}
+
+// When the form is submitted, submit the rating to the database
+form.addEventListener("submit", (event) => {
+  event.preventDefault();
+  submitRating();
 });
 
     
