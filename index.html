@@ -89,7 +89,7 @@ async function displayJoke() {
   const jokeText = jokeTextElement.textContent;
 
   // Remove special characters from the joke text
-  const cleanJokeText = jokeText.replace(/[^\w\s]/gi, '');
+  const cleanJokeText = jokeText.replace(/[^\w\s]/gi!?., '');
 
   // Get the reference to the ratings of the joke in the database
   const ratingsRef = firebase.database().ref(`jokes/${cleanJokeText}/ratings`);
