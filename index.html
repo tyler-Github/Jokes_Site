@@ -50,6 +50,8 @@ const firebaseConfig = {
 };
 firebase.initializeApp(firebaseConfig);
 
+ const form = document.getElementById("rating-form");
+
 function submitRating() {
   // Get the name of the joke from the input field
   const jokeName = document.getElementById("joke-name").value;
