@@ -96,7 +96,6 @@ function displayJoke(joke, avgRating) {
     const ratingContainer = document.querySelector('#rating-container');
     ratingContainer.innerHTML = `Average rating: ${averageRating}`;
   });
-}
 
 function submitRating(jokeKey, rating) {
   database.ref(`jokes/${jokeKey}/ratings`).push(rating);
