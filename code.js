@@ -47,3 +47,11 @@ form.addEventListener('submit', async (e) => {
   displayAverageRating(jokeKey);
 });
 
+document.getElementById("rating-form").addEventListener("submit", submitRating);
+
+function submitRating(e) {
+  e.preventDefault();
+  // Code for submitting the rating goes here
+  getJoke();
+}
+
