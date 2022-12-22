@@ -55,21 +55,46 @@ firebase.initializeApp(firebaseConfig);
 const database = firebase.database();
 
 async function getJoke() {
-  try {
-    const response = await fetch(API_URL);
-    const data = await response.json();
-    if (data.error) {
-      throw new Error(data.error);
+  const response = await fetch('https://v2.jokeapi.dev/joke/Any?blacklistFlags=nsfw,racist');
+  const data = await response.json();
+  const joke = data.joke;
+
+  // remove special characters from joke name
+  const jokeName = joke.replace(/[^a-zA-Z0-9]/g, '');
+
+  // insert joke into page
+  const jokeContainer = document.querySelector('#joke-container');
+  jokeContainer.textContent = joke;
+
+  // submit rating
+  const form = document.querySelector('#rating-form');
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    const rating = form.elements.rating.value;
+    submitRating(jokeName, rating);
+  });
+
+  // fetch average rating
+  const ratingsRef = firebase.database().ref(`jokes/${jokeName}/ratings`);
+  ratingsRef.on('value', snapshot => {
+    const ratings = snapshot.val();
+    let total = 0;
+    let count = 0;
+    for (const rating in ratings) {
+      total += ratings[rating];
+      count++;
     }
-    const joke = data.joke;
-    if (!joke) {
-      throw new Error('Joke data is not in the expected format');
-    }
-    // Rest of the function code goes here
-  } catch (error) {
-    console.error(error);
-  }
+    const average = total / count;
+    const ratingContainer = document.querySelector('#rating-container');
+    ratingContainer.textContent = `Average rating: ${average}`;
+  });
 }
+
+function submitRating(jokeName, rating) {
+  firebase.database().ref(`jokes/${jokeName}/ratings`).push(rating);
+}
+
+getJoke();
 
 
 async function displayJoke() {
