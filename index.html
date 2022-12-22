@@ -50,7 +50,7 @@ const firebaseConfig = {
 };
 firebase.initializeApp(firebaseConfig);
 
- const form = document.getElementById("rating-form");
+const form = document.getElementById("rating-form");
 
 function submitRating() {
   // Get the name of the joke from the input field
@@ -79,6 +79,7 @@ function submitRating() {
     ratingsRef.set(average);
   });
 }
+
 
 
 
